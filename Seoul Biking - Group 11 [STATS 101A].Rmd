@@ -1,0 +1,158 @@
+
+```{r}
+library(readr)
+library(dplyr)
+
+sbd <- read.csv("SeoulBikeData.csv")
+
+sbd
+```
+
+```{r}
+colnames(sbd)
+```
+
+
+
+```{r}
+# Assuming your dataset is named 'sbd'
+sbd_pairs <- sbd %>% select(-Date, -Functioning.Day) %>%
+  mutate(Seasons_Num = case_when(
+    Seasons == "Winter" ~ 1,
+    Seasons == "Spring" ~ 2,
+    Seasons == "Summer" ~ 3,
+    Seasons == "Fall" ~ 4
+  ))  %>%
+  mutate(Holiday_Num = if_else(Holiday == "Holiday", 1, 0))
+
+# Remove Dew.point.temperature.C. from the dataframe
+sbd_pairs <- sbd_pairs %>% select(-Dew.point.temperature.C.)
+
+# Add 20 to the Temperature.C. column
+sbd_pairs$Temperature.C. <- sbd_pairs$Temperature.C. + 20
+
+# View the updated dataset
+sbd_pairs <- sbd_pairs %>% select(-Seasons, -Holiday)
+
+sbd_pairs <- sbd_pairs + 0.000000000001
+attach(sbd_pairs)
+
+
+
+head(sbd_pairs)
+
+```
+
+# Mini Assignment #2
+
+## (1)
+
+```{r, cache=TRUE}
+pairs(sbd_pairs, cex.labels = 0.4, cex = 0.5)
+```
+
+## (2)
+
+```{r}
+model1 <- lm(Rented.Bike.Count ~ ., data = sbd_pairs)
+
+summary(model1)
+
+```
+
+```{r}
+anova(model1)
+```
+
+## (3)
+
+```{r}
+par(mfrow = c(2, 2))
+plot(model1)
+```
+
+
+## (4)
+
+```{r}
+library(car)
+```
+
+
+```{r}
+sbd_pairs
+```
+
+
+
+```{r}
+summary(powerTransform(cbind(Rented.Bike.Count, Hour, Temperature.C., Humidity..., Wind.speed..m.s., Visibility..10m., Solar.Radiation..MJ.m2., Rainfall.mm., Snowfall..cm., Seasons_Num, Holiday_Num)~1))
+```
+
+```{r}
+# Create a new dataframe for transformed variables
+sbd_transformed <- sbd_pairs
+
+# Power transformations
+sbd_transformed$Rented.Bike.Count <- sbd_pairs$Rented.Bike.Count^0.31
+sbd_transformed$Hour <- sbd_pairs$Hour^0.37
+sbd_transformed$Temperature.C. <- sbd_pairs$Temperature.C.^1.00
+sbd_transformed$Humidity... <- sbd_pairs$Humidity...^0.87
+sbd_transformed$Wind.speed..m.s. <- sbd_pairs$Wind.speed..m.s.^0.43
+sbd_transformed$Visibility..10m. <- sbd_pairs$Visibility..10m.^1.14
+sbd_transformed$Solar.Radiation..MJ.m2. <- sbd_pairs$Solar.Radiation..MJ.m2.^0.01
+sbd_transformed$Rainfall.mm. <- sbd_pairs$Rainfall.mm.^(-0.55)
+sbd_transformed$Snowfall..cm. <- sbd_pairs$Snowfall..cm.^(-0.61)
+sbd_transformed$Seasons_Num <- sbd_pairs$Seasons_Num^0.73
+sbd_transformed$Holiday_Num <- sbd_pairs$Holiday_Num^(-0.76)
+
+# View the transformed dataset
+head(sbd_transformed)
+```
+ 
+```{r}
+model_transfull <- lm(Rented.Bike.Count ~ ., data = sbd_transformed)
+
+summary(model_transfull)
+```
+
+```{r}
+pairs(sbd_transformed)
+```
+
+
+
+
+```{r}
+par(mfrow = c(2,2))
+plot(model_transfull)
+```
+
+## (5)
+
+```{r}
+backwardAIC <- step(model_transfull, direction = "backward", data = sbd_transformed)
+backwardAIC
+```
+
+Regression Model:
+
+lm(formula = Rented.Bike.Count ~ Hour + Temperature.C. + Humidity... + 
+    Wind.speed..m.s. + Solar.Radiation..MJ.m2. + Rainfall.mm. + 
+    Seasons_Num + Holiday_Num, data = sbd_transformed)
+    
+    
+```{r}
+model_transvars <- lm(formula = Rented.Bike.Count ~ Hour + Temperature.C. + Humidity... + 
+    Wind.speed..m.s. + Solar.Radiation..MJ.m2. + Rainfall.mm. + 
+    Seasons_Num + Holiday_Num, data = sbd_transformed)
+
+
+summary(model_transvars)
+```
+
+
+```{r}
+unique(sbd$Date)
+```
+
