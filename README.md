@@ -4,4 +4,4 @@ This project analyzes how various weather variables affect the demand for rentin
 
 Techniques used involve multi-linear regression analysis and F-statistics testing, including ANOVA, multi-covariate plots, and forward-backward stepwiswe regression.
 
-* Project was completed for UCLA's STATS 101A Course - Introduction to Data Analysis and Regression. 
+[Project was completed for UCLA's STATS 101A Course - Introduction to Data Analysis and Regression.]
